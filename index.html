@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>같은 그림 찾기</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #f8f5ec;
+      color: #20342d;
+      font-family: system-ui, "맑은 고딕", sans-serif;
+      line-height: 1.5;
+    }
+
+    main {
+      width: min(100%, 47rem);
+      margin-inline: auto;
+      padding: clamp(1rem, 4vw, 2.5rem);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    h1 {
+      margin: 0 0 0.5rem;
+      font-size: clamp(2rem, 6vw, 3rem);
+      line-height: 1.2;
+    }
+
+    header p {
+      margin: 0;
+      font-size: clamp(1.125rem, 3vw, 1.35rem);
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    #score {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 750;
+    }
+
+    button {
+      font: inherit;
+      color: inherit;
+      cursor: pointer;
+    }
+
+    #restart {
+      min-height: 3rem;
+      padding: 0.45rem 1rem;
+      border: 2px solid #285943;
+      border-radius: 0.75rem;
+      background: #fff;
+      font-size: 1.125rem;
+      font-weight: 750;
+    }
+
+    button:focus-visible {
+      outline: 3px solid #174da1;
+      outline-offset: 3px;
+    }
+
+    #board {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: clamp(0.65rem, 2vw, 1rem);
+    }
+
+    .card {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 100%;
+      min-width: 0;
+      min-height: 3.5rem;
+      aspect-ratio: 5 / 4;
+      padding: 0;
+      border: 2px solid #285943;
+      border-radius: 0.9rem;
+      background: #285943;
+      color: #fff;
+      font-size: clamp(2rem, 8vw, 3.5rem);
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .card.is-open {
+      background: #fff;
+      color: #20342d;
+    }
+
+    .card.is-matched {
+      background: #def1e2;
+      color: #20342d;
+    }
+
+    .card[aria-disabled="true"] {
+      cursor: default;
+    }
+
+    .check {
+      position: absolute;
+      top: 0.25rem;
+      right: 0.3rem;
+      display: grid;
+      place-items: center;
+      width: 1.4rem;
+      height: 1.4rem;
+      border-radius: 50%;
+      background: #285943;
+      color: #fff;
+      font-size: 0.95rem;
+    }
+
+    #result {
+      margin: 1rem 0 0;
+      text-align: center;
+      font-size: 1.25rem;
+      font-weight: 750;
+    }
+
+    @media (max-width: 36rem) {
+      #board {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>같은 그림 찾기</h1>
+      <p>카드 두 장을 눌러 같은 그림을 찾아보세요.</p>
+    </header>
+
+    <div class="controls">
+      <p id="score" aria-live="polite" aria-atomic="true">찾은 짝 0 / 6</p>
+      <button id="restart" type="button">다시 시작</button>
+    </div>
+
+    <div id="board" role="group" aria-label="과일 카드"></div>
+    <p id="result" role="status"></p>
+  </main>
+
+  <script>
+    const fruits = [
+      { name: '사과', emoji: '🍎' },
+      { name: '포도', emoji: '🍇' },
+      { name: '딸기', emoji: '🍓' },
+      { name: '바나나', emoji: '🍌' },
+      { name: '수박', emoji: '🍉' },
+      { name: '복숭아', emoji: '🍑' }
+    ];
+
+    const board = document.querySelector('#board');
+    const score = document.querySelector('#score');
+    const result = document.querySelector('#result');
+    const restart = document.querySelector('#restart');
+
+    let cards = [];
+    let firstCard = null;
+    let matchedPairs = 0;
+    let flipTimer = null;
+
+    function shuffledDeck() {
+      const deck = [...fruits, ...fruits];
+
+      for (let index = deck.length - 1; index > 0; index--) {
+        const otherIndex = Math.floor(Math.random() * (index + 1));
+        [deck[index], deck[otherIndex]] = [deck[otherIndex], deck[index]];
+      }
+
+      return deck;
+    }
+
+    function updateScore() {
+      score.textContent = `찾은 짝 ${matchedPairs} / ${fruits.length}`;
+    }
+
+    function renderCard(card) {
+      const isHidden = card.state === 'hidden';
+      const isMatched = card.state === 'matched';
+
+      card.button.classList.toggle('is-open', card.state === 'open');
+      card.button.classList.toggle('is-matched', isMatched);
+      card.symbol.textContent = isHidden ? '?' : card.fruit.emoji;
+
+      const label = isHidden
+        ? `${card.number}번 카드, 뒤집혀 있음`
+        : `${card.number}번 카드, ${card.fruit.name}${isMatched ? ', 짝을 찾음' : ''}`;
+      card.button.setAttribute('aria-label', label);
+
+      card.check.remove();
+      if (isMatched) {
+        card.button.append(card.check);
+      }
+    }
+
+    function updateAvailability() {
+      for (const card of cards) {
+        const unavailable = card.state !== 'hidden' || flipTimer !== null;
+        card.button.setAttribute('aria-disabled', String(unavailable));
+      }
+    }
+
+    function selectCard(card) {
+      if (flipTimer !== null || card.state !== 'hidden') {
+        return;
+      }
+
+      card.state = 'open';
+      renderCard(card);
+
+      if (firstCard === null) {
+        firstCard = card;
+        updateAvailability();
+        return;
+      }
+
+      const previousCard = firstCard;
+      firstCard = null;
+
+      if (previousCard.fruit === card.fruit) {
+        previousCard.state = 'matched';
+        card.state = 'matched';
+        renderCard(previousCard);
+        renderCard(card);
+
+        matchedPairs++;
+        updateScore();
+
+        if (matchedPairs === fruits.length) {
+          result.textContent = '축하합니다! 모든 그림의 짝을 찾았어요.';
+        }
+      } else {
+        flipTimer = window.setTimeout(() => {
+          previousCard.state = 'hidden';
+          card.state = 'hidden';
+          renderCard(previousCard);
+          renderCard(card);
+          flipTimer = null;
+          updateAvailability();
+        }, 1000);
+      }
+
+      updateAvailability();
+    }
+
+    function createCard(fruit, index) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'card';
+
+      const symbol = document.createElement('span');
+      symbol.setAttribute('aria-hidden', 'true');
+      button.append(symbol);
+
+      const check = document.createElement('span');
+      check.className = 'check';
+      check.textContent = '✓';
+      check.setAttribute('aria-hidden', 'true');
+
+      const card = {
+        number: index + 1,
+        fruit,
+        button,
+        symbol,
+        check,
+        state: 'hidden'
+      };
+
+      button.addEventListener('click', () => selectCard(card));
+      renderCard(card);
+      return card;
+    }
+
+    function startGame() {
+      window.clearTimeout(flipTimer);
+      flipTimer = null;
+      firstCard = null;
+      matchedPairs = 0;
+      result.textContent = '';
+
+      cards = shuffledDeck().map(createCard);
+      board.replaceChildren(...cards.map(card => card.button));
+      updateAvailability();
+      updateScore();
+    }
+
+    restart.addEventListener('click', startGame);
+    startGame();
+  </script>
+</body>
+</html>
