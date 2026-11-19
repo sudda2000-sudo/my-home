@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>중장년 배움안내 | 50+ 웹 실습</title>
+<style>
+  :root {
+    color-scheme: light;
+    --ink: #202c28;
+    --muted: #52615b;
+    --green: #174738;
+    --accent: #f4ad59;
+    --line: #dce3dd;
+    --tint: #f3f6f1;
+    --page: 1100px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-padding-top: 16px; }
+  body { margin: 0; background: white; color: var(--ink); font: 17px/1.6 system-ui, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; word-break: keep-all; }
+  a { color: inherit; }
+  button, input, select { font: inherit; }
+  button { cursor: pointer; }
+  [hidden] { display: none !important; }
+  :focus-visible { outline: 3px solid #aa4d00; outline-offset: 4px; }
+  .wrap { width: min(var(--page), calc(100% - 48px)); margin-inline: auto; }
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 80px; }
+  .brand { font-size: 22px; font-weight: 850; text-decoration: none; letter-spacing: -.06em; }
+  .brand span { color: var(--green); margin-right: .35em; }
+  nav { display: flex; flex-wrap: wrap; gap: 12px 25px; font-weight: 700; }
+  nav a, .foot a { text-underline-offset: 5px; }
+  nav a { text-decoration: none; }
+  nav a:hover { text-decoration: underline; }
+  .banner { background: var(--green); color: white; border-radius: 24px; padding: clamp(28px, 5.6vw, 66px); }
+  .banner-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, .54fr); align-items: end; gap: 32px; }
+  .banner h1 { font-size: clamp(36px, 5.5vw, 70px); line-height: 1.13; margin: 0 0 20px; letter-spacing: -.075em; }
+  .banner p { max-width: 34ch; margin: 0; color: #e2eee8; }
+  .shortcut { padding: 18px 20px; border: 1px solid #88aa9c; border-radius: 14px; }
+  .shortcut a { display: block; padding: 9px 0; text-decoration: none; font-weight: 700; }
+  .shortcut a + a { border-top: 1px solid #88aa9c; }
+  .shortcut a:hover { text-decoration: underline; }
+  .shortcut span { float: right; }
+  section { margin-block: clamp(36px, 6vw, 66px); }
+  h2 { font-size: clamp(27px, 3.4vw, 38px); letter-spacing: -.06em; line-height: 1.25; margin: 0 0 14px; }
+  .muted, footer { color: var(--muted); }
+  .section-head p { margin: 0 0 20px; }
+  .filters { display: grid; grid-template-columns: 1fr minmax(170px, auto) auto; gap: 12px; align-items: end; background: var(--tint); padding: 18px; border-radius: 14px; }
+  .field { display: grid; gap: 6px; font-weight: 700; }
+  input, select { min-width: 0; width: 100%; padding: 9px 12px; min-height: 47px; color: var(--ink); background: white; border: 1px solid #9eaaa1; border-radius: 8px; font-weight: 400; }
+  .button { display: inline-flex; align-items: center; justify-content: center; min-height: 47px; padding: 8px 16px; background: var(--accent); color: #281d12; font-weight: 750; text-decoration: none; border: 1px solid transparent; border-radius: 8px; }
+  .button:hover { background: #ffc27b; }
+  .plain { background: white; border-color: #9eaaa1; color: var(--green); }
+  .plain:hover { background: var(--tint); }
+  .results { margin: 19px 0 10px; color: var(--muted); font-size: 15px; }
+  .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .card { min-width: 0; display: flex; flex-direction: column; gap: 10px; padding: 23px; border: 1px solid var(--line); border-top: 4px solid #d4823d; border-radius: 10px; }
+  .card h3 { margin: 0; font-size: 22px; letter-spacing: -.045em; line-height: 1.35; }
+  .card p { margin: 0; color: var(--muted); }
+  .card small { font-weight: 750; color: var(--green); }
+  .card button { align-self: flex-start; margin-top: auto; }
+  .empty { padding: 25px; text-align: center; border: 1px dashed #9eaaa1; border-radius: 10px; }
+  .services { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .service { display: grid; gap: 5px; padding: 19px 22px; border: 1px solid var(--line); border-radius: 10px; text-decoration: none; }
+  .service strong { color: var(--green); font-size: 20px; }
+  .service:hover { background: var(--tint); }
+  footer { background: var(--tint); padding: 22px 0; font-size: 15px; }
+  .foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 18px; }
+  dialog { width: min(500px, calc(100% - 32px)); border: 1px solid var(--line); border-radius: 15px; padding: 26px; color: var(--ink); }
+  dialog::backdrop { background: #162520a8; }
+  .dialog-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+  @media (max-width: 760px) {
+    .banner-grid { grid-template-columns: 1fr; gap: 22px; }
+    .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 520px) {
+    .wrap { width: calc(100% - 28px); }
+    .top { align-items: flex-start; flex-direction: column; justify-content: center; gap: 4px; padding: 10px 0 16px; }
+    nav { gap: 8px 16px; font-size: 15px; }
+    .banner { border-radius: 16px; }
+    .filters { grid-template-columns: minmax(0, 1fr) auto; }
+    .field:first-child { grid-column: 1 / -1; }
+    .cards, .services { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header class="wrap top" id="home">
+  <a class="brand" href="#home"><span>50+</span> 중장년 배움안내</a>
+  <nav aria-label="주 메뉴">
+    <a href="#courses">교육 찾기</a>
+    <a href="#services">센터·지원 안내</a>
+    <a href="https://www.50plus.or.kr/">공식 포털</a>
+  </nav>
+</header>
+<main class="wrap">
+  <div class="banner">
+    <div class="banner-grid">
+      <div>
+        <h1>배우고, 준비하는<br>중장년의 다음 일</h1>
+        <p>AI·디지털 교육부터 취업 준비까지, 관심 분야의 과정을 찾아보세요.</p>
+      </div>
+      <div class="shortcut" aria-label="빠른 이동">
+        <a href="#courses">교육 프로그램 찾아보기 <span aria-hidden="true">↓</span></a>
+        <a href="https://www.50plus.or.kr/centerEducation.do">공식 센터 교육 확인 <span aria-hidden="true">↗</span></a>
+      </div>
+    </div>
+  </div>
+  <section id="courses" aria-labelledby="course-heading">
+    <div class="section-head">
+      <h2 id="course-heading">교육 프로그램 찾기</h2>
+      <p class="muted">아래 과정은 검색 실습용 예시입니다. 모집 일정과 신청은 공식 페이지에서 확인할 수 있습니다.</p>
+    </div>
+    <form class="filters" id="filters" role="search" aria-label="교육 과정 검색">
+      <label class="field">검색어
+        <input id="keyword" type="search" placeholder="예: 생성형 AI, 취업">
+      </label>
+      <label class="field">교육 분야
+        <select id="category">
+          <option value="">전체 분야</option>
+          <option>AI·디지털</option>
+          <option>취업·경력</option>
+          <option>생활·소통</option>
+        </select>
+      </label>
+      <button class="button" type="submit">검색</button>
+    </form>
+    <p class="results" id="count" role="status"></p>
+    <div class="cards" id="course-list"></div>
+    <div class="empty" id="empty" hidden>
+      <p>검색 조건에 맞는 과정이 없습니다.</p>
+      <button class="button plain" id="reset" type="button">검색 조건 초기화</button>
+    </div>
+    <noscript>실습용 과정 검색에 자바스크립트가 필요합니다. <a href="https://www.50plus.or.kr/centerEducation.do">공식 교육 목록 열기</a></noscript>
+  </section>
+  <section id="services" aria-labelledby="services-heading">
+    <h2 id="services-heading">센터·지원 안내</h2>
+    <div class="services">
+      <a class="service" href="https://www.50plus.or.kr/centerEducation.do">
+        <strong>50플러스센터 교육 <span aria-hidden="true">↗</span></strong>
+        <span class="muted">자치구 센터의 실제 교육 및 모집 정보 확인</span>
+      </a>
+      <a class="service" href="https://www.50plus.or.kr/">
+        <strong>서울시50플러스 공식 포털 <span aria-hidden="true">↗</span></strong>
+        <span class="muted">취업상담, 일자리, 공지사항 확인</span>
+      </a>
+    </div>
+  </section>
+</main>
+<footer>
+  <div class="wrap foot">
+    <span>50+ 웹 실습용 페이지</span>
+    <a href="#home">맨 위로 이동 ↑</a>
+  </div>
+</footer>
+<dialog id="details" aria-labelledby="details-title">
+  <p class="muted" id="details-category"></p>
+  <h2 id="details-title"></h2>
+  <p id="details-summary"></p>
+  <div class="dialog-actions">
+    <a class="button" href="https://www.50plus.or.kr/centerEducation.do">공식 교육 목록 보기</a>
+    <form method="dialog"><button class="button plain">닫기</button></form>
+  </div>
+</dialog>
+<script>
+  const courses = [
+    {
+      title: '생성형 AI로 문서 작성하기',
+      category: 'AI·디지털',
+      summary: 'ChatGPT로 이메일 초안과 회의 요약을 작성하고 입력한 자료와 결과를 대조합니다.'
+    },
+    {
+      title: '브라우저로 첫 웹페이지 만들기',
+      category: 'AI·디지털',
+      summary: 'HTML로 나를 소개하는 페이지를 만들고 글자와 배경색을 바꿔 봅니다.'
+    },
+    {
+      title: '중장년 이력서와 면접 준비',
+      category: '취업·경력',
+      summary: '주요 경험을 이력서에 정리하고 면접 답변을 소리 내어 연습합니다.'
+    },
+    {
+      title: '경력 전환 계획 세우기',
+      category: '취업·경력',
+      summary: '지금까지의 업무 경험을 돌아보고 관심 직무와 필요한 역량을 정리합니다.'
+    },
+    {
+      title: '스마트폰 사진 정리와 공유',
+      category: '생활·소통',
+      summary: '사진을 앨범으로 정리하고 가족이나 지인과 안전하게 공유합니다.'
+    },
+    {
+      title: '지역 모임 운영 기초',
+      category: '생활·소통',
+      summary: '관심사를 바탕으로 모임 주제를 정하고 첫 모임의 일정과 안내문을 만듭니다.'
+    }
+  ];
+
+  const filters = document.querySelector('#filters');
+  const keyword = document.querySelector('#keyword');
+  const category = document.querySelector('#category');
+  const list = document.querySelector('#course-list');
+  const count = document.querySelector('#count');
+  const empty = document.querySelector('#empty');
+  const details = document.querySelector('#details');
+
+  function showDetails(course) {
+    document.querySelector('#details-title').textContent = course.title;
+    document.querySelector('#details-category').textContent = '실습용 예시 · ' + course.category;
+    document.querySelector('#details-summary').textContent = course.summary;
+    details.showModal();
+  }
+
+  function createCard(course) {
+    const card = document.createElement('article');
+    card.className = 'card';
+
+    const label = document.createElement('small');
+    label.textContent = course.category;
+    const heading = document.createElement('h3');
+    heading.textContent = course.title;
+    const summary = document.createElement('p');
+    summary.textContent = course.summary;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'button plain';
+    button.textContent = '상세 보기';
+    button.setAttribute('aria-label', course.title + ' 상세 보기');
+    button.addEventListener('click', () => showDetails(course));
+
+    card.append(label, heading, summary, button);
+    return card;
+  }
+
+  function renderCourses() {
+    const query = keyword.value.trim().toLowerCase();
+    const selectedCategory = category.value;
+    const matchingCourses = courses.filter((course) => {
+      const text = course.title + ' ' + course.summary + ' ' + course.category;
+      const matchesKeyword = text.toLowerCase().includes(query);
+      const matchesCategory = !selectedCategory || course.category === selectedCategory;
+      return matchesKeyword && matchesCategory;
+    });
+
+    list.replaceChildren(...matchingCourses.map(createCard));
+    count.textContent = '검색 결과 ' + matchingCourses.length + '개';
+    empty.hidden = matchingCourses.length > 0;
+  }
+
+  filters.addEventListener('submit', (event) => {
+    event.preventDefault();
+    renderCourses();
+  });
+  category.addEventListener('change', renderCourses);
+  document.querySelector('#reset').addEventListener('click', () => {
+    filters.reset();
+    renderCourses();
+    keyword.focus();
+  });
+
+  renderCourses();
+</script>
+</body>
+</html>
